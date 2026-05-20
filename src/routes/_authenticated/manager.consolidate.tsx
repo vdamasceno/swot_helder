@@ -115,6 +115,14 @@ function ConsolidatePage() {
     })();
   }, [period]);
 
+  // ── All hooks before any conditional return ───────────────────────────
+  const grouped = useMemo(() => {
+    const out: Record<SwotCategory, ConsolidatedItem[]> = { strength: [], weakness: [], opportunity: [], threat: [] };
+    items.forEach((i) => out[i.category].push(i));
+    return out;
+  }, [items]);
+
+  // ── Early returns after all hooks ─────────────────────────────────────
   if (role !== "gestor") return <p className="text-sm text-muted-foreground">Acesso restrito ao gestor.</p>;
   if (loading) return <p className="text-sm text-muted-foreground">Carregando...</p>;
   if (!period) return <p className="text-sm text-muted-foreground">Nenhum ciclo encontrado.</p>;
@@ -224,12 +232,6 @@ function ConsolidatePage() {
     setItems((data ?? []) as ConsolidatedItem[]);
     toast.success("Alterações salvas.");
   };
-
-  const grouped = useMemo(() => {
-    const out: Record<SwotCategory, ConsolidatedItem[]> = { strength: [], weakness: [], opportunity: [], threat: [] };
-    items.forEach((i) => out[i.category].push(i));
-    return out;
-  }, [items]);
 
   const locked = period.phase !== "consolidacao";
 

@@ -146,9 +146,7 @@ function ResultsPage() {
     })();
   }, [period]);
 
-  if (role !== "gestor") return <p className="text-sm text-muted-foreground">Acesso restrito ao gestor.</p>;
-  if (loading) return <p className="text-sm text-muted-foreground">Carregando...</p>;
-
+  // ── All hooks must be called before any conditional return ──────────────
   const threshold = period?.concord_threshold ?? 70;
 
   const stats = useMemo<ItemStats[]>(() => {
@@ -172,6 +170,10 @@ function ResultsPage() {
     stats.forEach((s) => out[s.item.category].push(s));
     return out;
   }, [stats]);
+
+  // ── Conditional early returns after all hooks ─────────────────────────
+  if (role !== "gestor") return <p className="text-sm text-muted-foreground">Acesso restrito ao gestor.</p>;
+  if (loading) return <p className="text-sm text-muted-foreground">Carregando...</p>;
 
   const approvedCount = stats.filter((s) => s.approved).length;
 
