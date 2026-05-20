@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { Plus, Trash2, Save, Printer } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/manager/action-plan")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { period?: string } => ({
     period: typeof search.period === "string" ? search.period : undefined,
   }),
   component: ActionPlanPage,

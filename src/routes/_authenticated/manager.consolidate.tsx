@@ -12,7 +12,7 @@ import { Trash2, Save, RefreshCw, Plus, Lock } from "lucide-react";
 import { GENERAL_ITEM_CODE, type SwotCategory } from "@/lib/swot-items";
 
 export const Route = createFileRoute("/_authenticated/manager/consolidate")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { period?: string } => ({
     period: typeof search.period === "string" ? search.period : undefined,
   }),
   component: ConsolidatePage,
@@ -267,7 +267,9 @@ function ConsolidatePage() {
           <div>
             <h2 className="font-semibold">Importar respostas brutas</h2>
             <p className="text-xs text-muted-foreground">
-              {rawCount} respostas na Rodada 1. A importação substitui a lista atual.
+              {rawCount > 0
+                ? `${rawCount} respostas encontradas na Rodada 1. A importação substitui a lista atual.`
+                : "Nenhuma resposta na Rodada 1 ainda. Aguarde os participantes ou adicione itens manualmente abaixo."}
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">

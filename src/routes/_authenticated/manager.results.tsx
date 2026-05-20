@@ -10,7 +10,7 @@ import { CheckCircle2, XCircle, MinusCircle } from "lucide-react";
 import type { SwotCategory } from "@/lib/swot-items";
 
 export const Route = createFileRoute("/_authenticated/manager/results")({
-  validateSearch: (search: Record<string, unknown>) => ({
+  validateSearch: (search: Record<string, unknown>): { period?: string } => ({
     period: typeof search.period === "string" ? search.period : undefined,
   }),
   component: ResultsPage,
@@ -220,7 +220,17 @@ function ResultsPage() {
 
       {items.length === 0 && (
         <Card className="p-6 text-sm text-muted-foreground">
-          Nenhum item consolidado encontrado. Complete a fase de consolidação primeiro.
+          Nenhum item consolidado encontrado para este ciclo. Complete a fase de consolidação primeiro.
+        </Card>
+      )}
+
+      {items.length > 0 && totalParticipants === 0 && (
+        <Card className="p-5 border-l-4 border-l-amber-500 bg-amber-500/5 text-sm">
+          <p className="font-medium">Aguardando votos da Rodada 2</p>
+          <p className="text-muted-foreground mt-1">
+            Há {items.length} itens consolidados disponíveis para validação, mas nenhum participante respondeu ainda.
+            Certifique-se de que o ciclo está na fase <strong>Rodada 2 — Validação</strong> e que os participantes acessaram o link de validação.
+          </p>
         </Card>
       )}
 
