@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Check, X, Lock, LockOpen, ArrowRight, ListChecks, UserCog, BarChart2, ClipboardList } from "lucide-react";
+import { Check, X, Lock, LockOpen, ArrowRight, ArrowLeft, ListChecks, UserCog, BarChart2, ClipboardList } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Phase = "rodada1" | "consolidacao" | "rodada2" | "encerrado";
@@ -23,6 +23,11 @@ const NEXT_PHASE: Record<Phase, Phase | null> = {
   consolidacao: "rodada2",
   rodada2: "encerrado",
   encerrado: null,
+};
+const PREV_PHASE: Partial<Record<Phase, Phase>> = {
+  consolidacao: "rodada1",
+  rodada2: "consolidacao",
+  encerrado: "rodada2",
 };
 
 export const Route = createFileRoute("/_authenticated/manager")({
@@ -201,6 +206,19 @@ function ManagerPanel() {
     refresh();
   };
 
+  const revertPhase = async (p: Period) => {
+    const prev = PREV_PHASE[p.phase];
+    if (!prev) return;
+    if (!confirm(`Retroceder "${p.name}" para a fase "${PHASE_LABEL[prev]}"?\n\nAtenção: respostas já enviadas nesta fase permanecem no banco — use apenas para correção de rota.`)) return;
+    const { error } = await supabase
+      .from("evaluation_periods")
+      .update({ phase: prev })
+      .eq("id", p.id);
+    if (error) return toast.error(error.message);
+    toast.success(`Fase retrocedida para ${PHASE_LABEL[prev]}.`);
+    refresh();
+  };
+
   const changeParticipantType = async (id: string, participant_type: ParticipantType) => {
     const { error } = await supabase.from("profiles").update({ participant_type }).eq("id", id);
     if (error) return toast.error(error.message);
@@ -300,6 +318,11 @@ function ManagerPanel() {
                 {NEXT_PHASE[p.phase] && p.is_open && (
                   <Button size="sm" onClick={() => advancePhase(p)}>
                     <ArrowRight className="size-4 mr-1" /> Avançar p/ {PHASE_LABEL[NEXT_PHASE[p.phase]!]}
+                  </Button>
+                )}
+                {PREV_PHASE[p.phase] && (
+                  <Button size="sm" variant="ghost" className="text-muted-foreground text-xs" onClick={() => revertPhase(p)}>
+                    <ArrowLeft className="size-3 mr-1" /> Voltar fase
                   </Button>
                 )}
                 {p.phase === "consolidacao" && (

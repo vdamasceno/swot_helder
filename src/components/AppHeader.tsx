@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Logo } from "./Logo";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
-import { LogOut, Menu, X, ClipboardList, BarChart2, Sparkles, Settings, ListChecks } from "lucide-react";
+import { LogOut, Menu, X, ClipboardList, BarChart2, Settings, ListChecks } from "lucide-react";
 
 export function AppHeader() {
   const { profile, role, signOut } = useAuth();
@@ -24,7 +24,6 @@ export function AppHeader() {
     { to: "/manager", label: "Painel do Gestor", icon: Settings },
     { to: "/manager/results", label: "Resultados R2", icon: BarChart2 },
     { to: "/manager/action-plan", label: "Plano de Ação", icon: ListChecks },
-    { to: "/manager/compile", label: "Compilação IA", icon: Sparkles },
   ] as const;
 
   const navLinks = role === "gestor" ? gestorLinks : professorLinks;
