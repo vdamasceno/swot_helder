@@ -275,10 +275,19 @@ function SwotForm() {
             )}
           </div>
           <p className="text-sm text-muted-foreground max-w-3xl">
-            Você está respondendo a Rodada 1 (Brainstorm). Para cada indicador da ficha CAPES preencha até{" "}
-            {MAX_ENTRIES_PER_BUCKET} <strong>Forças</strong> e até {MAX_ENTRIES_PER_BUCKET}{" "}
-            <strong>Fraquezas</strong>. As <strong>Ameaças e Oportunidades</strong> são respondidas em uma seção
-            geral única ao final.
+            {period.phase === "rodada1" ? (
+              <>
+                Você está respondendo a Rodada 1 (Brainstorm). Para cada indicador da ficha CAPES preencha até{" "}
+                {MAX_ENTRIES_PER_BUCKET} <strong>Forças</strong> e até {MAX_ENTRIES_PER_BUCKET}{" "}
+                <strong>Fraquezas</strong>. As <strong>Ameaças e Oportunidades</strong> são respondidas em uma
+                seção geral única ao final.
+              </>
+            ) : (
+              <>
+                Este ciclo está em fase de <strong>{phaseLabel[period.phase]}</strong>. Suas respostas estão em
+                modo somente leitura.
+              </>
+            )}
           </p>
         </div>
         {canEdit && (

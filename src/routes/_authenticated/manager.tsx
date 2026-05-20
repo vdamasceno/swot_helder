@@ -246,7 +246,7 @@ function ManagerPanel() {
                     </Button>
                   )}
                   {p.phase === "consolidacao" && (
-                    <Link to="/manager/consolidate">
+                    <Link to="/manager/consolidate" search={{ period: p.id }}>
                       <Button size="sm" variant="secondary">
                         <ListChecks className="size-4 mr-1" /> Consolidar
                       </Button>

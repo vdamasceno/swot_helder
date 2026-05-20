@@ -12,6 +12,9 @@ import { Trash2, Save, RefreshCw, Plus, Lock } from "lucide-react";
 import { GENERAL_ITEM_CODE, type SwotCategory } from "@/lib/swot-items";
 
 export const Route = createFileRoute("/_authenticated/manager/consolidate")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    period: typeof search.period === "string" ? search.period : undefined,
+  }),
   component: ConsolidatePage,
 });
 
@@ -67,6 +70,7 @@ const CAT_ORDER: SwotCategory[] = ["strength", "weakness", "opportunity", "threa
 
 function ConsolidatePage() {
   const { role } = useAuth();
+  const { period: periodIdParam } = Route.useSearch();
   const [periods, setPeriods] = useState<Period[]>([]);
   const [period, setPeriod] = useState<Period | null>(null);
   const [items, setItems] = useState<ConsolidatedItem[]>([]);
@@ -81,7 +85,12 @@ function ConsolidatePage() {
         .order("opened_at", { ascending: false });
       const list = (data ?? []) as Period[];
       setPeriods(list);
-      const auto = list.find((p) => p.phase === "consolidacao") ?? list.find((p) => p.is_open) ?? list[0] ?? null;
+      const auto =
+        (periodIdParam ? list.find((p) => p.id === periodIdParam) : null) ??
+        list.find((p) => p.phase === "consolidacao") ??
+        list.find((p) => p.is_open) ??
+        list[0] ??
+        null;
       setPeriod(auto);
       setLoading(false);
     })();
