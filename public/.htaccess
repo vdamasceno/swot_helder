@@ -1,13 +1,15 @@
 Options -MultiViews
 RewriteEngine On
+RewriteBase /
 
-# Se o arquivo existe, serve direto
+# Serve static files directly (js, css, images, etc.)
 RewriteCond %{REQUEST_FILENAME} -f
 RewriteRule ^ - [L]
 
-# Tenta index.html (deploy via Hostinger/Linux)
+# SPA fallback: try index.html first (Linux/Hostinger build)
 RewriteCond %{DOCUMENT_ROOT}/index.html -f
-RewriteRule ^ index.html [QSA,L]
+RewriteRule ^ /index.html [QSA,L]
 
-# Fallback: _shell.html (build local Windows)
-RewriteRule ^ _shell.html [QSA,L]
+# SPA fallback: try _shell.html (Windows local build)
+RewriteCond %{DOCUMENT_ROOT}/_shell.html -f
+RewriteRule ^ /_shell.html [QSA,L]
