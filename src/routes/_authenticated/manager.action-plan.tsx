@@ -13,6 +13,9 @@ import { toast } from "sonner";
 import { Plus, Trash2, Save, Printer } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/manager/action-plan")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    period: typeof search.period === "string" ? search.period : undefined,
+  }),
   component: ActionPlanPage,
 });
 
@@ -48,6 +51,7 @@ const DEADLINE_LABEL: Record<string, string> = {
 
 function ActionPlanPage() {
   const { role } = useAuth();
+  const { period: periodIdParam } = Route.useSearch();
   const [periods, setPeriods] = useState<Period[]>([]);
   const [period, setPeriod] = useState<Period | null>(null);
   const [plans, setPlans] = useState<ActionPlan[]>([]);
@@ -61,10 +65,14 @@ function ActionPlanPage() {
         .order("opened_at", { ascending: false });
       const list = (data ?? []) as Period[];
       setPeriods(list);
-      const auto = list[0] ?? null;
+      const auto =
+        (periodIdParam ? list.find((p) => p.id === periodIdParam) : null) ??
+        list[0] ??
+        null;
       setPeriod(auto);
       setLoading(false);
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

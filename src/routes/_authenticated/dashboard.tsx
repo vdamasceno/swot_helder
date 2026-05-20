@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ClipboardList, Users, Sparkles, Calendar } from "lucide-react";
+import { ClipboardList, Users, Sparkles, Calendar, BarChart2 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Dashboard,
@@ -143,16 +143,25 @@ function Dashboard() {
                 <Button>Acessar painel</Button>
               </Link>
             </Card>
-            <Card className="p-6 border-accent/40">
+            <Card className="p-6">
               <h2 className="font-semibold text-lg flex items-center gap-2">
-                <Sparkles className="size-4 text-accent-foreground" /> Consolidação por IA
+                <BarChart2 className="size-4 text-primary" /> Resultados & Plano de Ação
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Gere a análise SWOT institucional unificada a partir de todas as fichas docentes.
+                Consulte a Matriz Diagnóstica SWOT gerada pela Rodada 2 e elabore o Plano de Ação estratégico.
               </p>
-              <Link to="/manager/compile" className="inline-block mt-4">
-                <Button variant="outline">Compilar agora</Button>
-              </Link>
+              <div className="flex gap-2 mt-4 flex-wrap">
+                <Link to="/manager/results">
+                  <Button variant="outline" size="sm">
+                    <BarChart2 className="size-4 mr-1" /> Ver Resultados
+                  </Button>
+                </Link>
+                <Link to="/manager/action-plan">
+                  <Button variant="outline" size="sm">
+                    <ClipboardList className="size-4 mr-1" /> Plano de Ação
+                  </Button>
+                </Link>
+              </div>
             </Card>
           </>
         )}

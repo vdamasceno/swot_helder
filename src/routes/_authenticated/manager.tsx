@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Check, X, Lock, LockOpen, ArrowRight, ListChecks, UserCog, BarChart2 } from "lucide-react";
+import { Check, X, Lock, LockOpen, ArrowRight, ListChecks, UserCog, BarChart2, ClipboardList } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Phase = "rodada1" | "consolidacao" | "rodada2" | "encerrado";
@@ -65,6 +65,13 @@ interface Period {
   response_days: number;
 }
 
+interface PeriodStats {
+  r1: number;
+  ci: number;
+  r2Users: number;
+  ap: number;
+}
+
 function ProfileBadge({ profile }: { profile: Profile }) {
   const pt = profile.participant_type ?? "docente";
   const ptLabel = PARTICIPANT_LABELS[pt] ?? pt;
@@ -83,6 +90,7 @@ function ManagerPanel() {
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [periods, setPeriods] = useState<Period[]>([]);
   const [progress, setProgress] = useState<Record<string, number>>({});
+  const [periodStats, setPeriodStats] = useState<Record<string, PeriodStats>>({});
   const [newName, setNewName] = useState("");
   const [newYear, setNewYear] = useState(new Date().getFullYear());
 
@@ -109,6 +117,27 @@ function ManagerPanel() {
     } else {
       setProgress({});
     }
+
+    // Load per-period statistics for the dashboard summary
+    const statsMap: Record<string, PeriodStats> = {};
+    await Promise.all(
+      (pers ?? []).map(async (per: any) => {
+        const [r1, ci, r2, ap] = await Promise.all([
+          supabase.from("swot_entries").select("*", { count: "exact", head: true }).eq("period_id", per.id),
+          supabase.from("consolidated_items").select("*", { count: "exact", head: true }).eq("period_id", per.id),
+          supabase.from("validation_responses").select("user_id").eq("period_id", per.id),
+          supabase.from("action_plans").select("*", { count: "exact", head: true }).eq("period_id", per.id),
+        ]);
+        const uniqueUsers = new Set((r2.data ?? []).map((r: any) => r.user_id)).size;
+        statsMap[per.id] = {
+          r1: r1.count ?? 0,
+          ci: ci.count ?? 0,
+          r2Users: uniqueUsers,
+          ap: ap.count ?? 0,
+        };
+      })
+    );
+    setPeriodStats(statsMap);
   };
 
   useEffect(() => {
@@ -221,11 +250,14 @@ function ManagerPanel() {
         </div>
         <div className="divide-y border-t">
           {periods.length === 0 && <p className="text-sm text-muted-foreground py-4">Nenhum ciclo criado.</p>}
-          {periods.map((p) => (
+          {periods.map((p) => {
+            const st = periodStats[p.id];
+            return (
             <div key={p.id} className="py-4 space-y-3">
-              <div className="flex items-center justify-between flex-wrap gap-2">
+              {/* Header row */}
+              <div className="flex items-start justify-between flex-wrap gap-2">
                 <div>
-                  <div className="font-medium">{p.name} · {p.year}</div>
+                  <div className="font-semibold text-base">{p.name} · {p.year}</div>
                   <div className="text-xs text-muted-foreground">
                     Aberto em {new Date(p.opened_at).toLocaleDateString("pt-BR")}
                     {p.closed_at && ` · Fechado em ${new Date(p.closed_at).toLocaleDateString("pt-BR")}`}
@@ -236,25 +268,65 @@ function ManagerPanel() {
                   <Badge variant={p.is_open ? "default" : "secondary"}>
                     {p.is_open ? "Aberto" : "Fechado"}
                   </Badge>
-                  <Button size="sm" variant="outline" onClick={() => togglePeriod(p)}>
-                    {p.is_open ? <Lock className="size-4 mr-1" /> : <LockOpen className="size-4 mr-1" />}
-                    {p.is_open ? "Fechar" : "Reabrir"}
-                  </Button>
-                  {NEXT_PHASE[p.phase] && p.is_open && (
-                    <Button size="sm" onClick={() => advancePhase(p)}>
-                      <ArrowRight className="size-4 mr-1" /> Avançar p/ {PHASE_LABEL[NEXT_PHASE[p.phase]!]}
-                    </Button>
-                  )}
-                  {p.phase === "consolidacao" && (
-                    <Link to="/manager/consolidate" search={{ period: p.id }}>
-                      <Button size="sm" variant="secondary">
-                        <ListChecks className="size-4 mr-1" /> Consolidar
-                      </Button>
-                    </Link>
-                  )}
                 </div>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+
+              {/* Per-phase stats strip */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="rounded-md bg-muted/50 px-3 py-2">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Rodada 1</div>
+                  <div className="font-semibold text-sm mt-0.5">{st?.r1 ?? "—"} apontamentos</div>
+                </div>
+                <div className="rounded-md bg-muted/50 px-3 py-2">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Consolidados</div>
+                  <div className="font-semibold text-sm mt-0.5">{st?.ci ?? "—"} itens</div>
+                </div>
+                <div className="rounded-md bg-muted/50 px-3 py-2">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Rodada 2</div>
+                  <div className="font-semibold text-sm mt-0.5">{st?.r2Users ?? "—"} respondentes</div>
+                </div>
+                <div className="rounded-md bg-muted/50 px-3 py-2">
+                  <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Plano de Ação</div>
+                  <div className="font-semibold text-sm mt-0.5">{st?.ap ?? "—"} ações</div>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button size="sm" variant="outline" onClick={() => togglePeriod(p)}>
+                  {p.is_open ? <Lock className="size-4 mr-1" /> : <LockOpen className="size-4 mr-1" />}
+                  {p.is_open ? "Fechar" : "Reabrir"}
+                </Button>
+                {NEXT_PHASE[p.phase] && p.is_open && (
+                  <Button size="sm" onClick={() => advancePhase(p)}>
+                    <ArrowRight className="size-4 mr-1" /> Avançar p/ {PHASE_LABEL[NEXT_PHASE[p.phase]!]}
+                  </Button>
+                )}
+                {p.phase === "consolidacao" && (
+                  <Link to="/manager/consolidate" search={{ period: p.id }}>
+                    <Button size="sm" variant="secondary">
+                      <ListChecks className="size-4 mr-1" /> Consolidar
+                    </Button>
+                  </Link>
+                )}
+                {(p.phase === "rodada2" || p.phase === "encerrado") && (
+                  <>
+                    <Link to="/manager/results" search={{ period: p.id }}>
+                      <Button size="sm" variant="secondary">
+                        <BarChart2 className="size-4 mr-1" /> Ver Resultados
+                      </Button>
+                    </Link>
+                    <Link to="/manager/action-plan" search={{ period: p.id }}>
+                      <Button size="sm" variant="secondary">
+                        <ClipboardList className="size-4 mr-1" /> Plano de Ação
+                      </Button>
+                    </Link>
+                  </>
+                )}
+              </div>
+
+              {/* Threshold settings (collapsible feel via smaller text) */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs pt-1 border-t border-dashed">
                 <div>
                   <Label className="text-xs">% concordância (Rodada 2)</Label>
                   <Input
@@ -276,7 +348,8 @@ function ManagerPanel() {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </Card>
 

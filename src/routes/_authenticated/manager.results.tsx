@@ -10,6 +10,9 @@ import { CheckCircle2, XCircle, MinusCircle } from "lucide-react";
 import type { SwotCategory } from "@/lib/swot-items";
 
 export const Route = createFileRoute("/_authenticated/manager/results")({
+  validateSearch: (search: Record<string, unknown>) => ({
+    period: typeof search.period === "string" ? search.period : undefined,
+  }),
   component: ResultsPage,
 });
 
@@ -93,6 +96,7 @@ function modal(vals: (string | null)[]): string | null {
 
 function ResultsPage() {
   const { role } = useAuth();
+  const { period: periodIdParam } = Route.useSearch();
   const [periods, setPeriods] = useState<Period[]>([]);
   const [period, setPeriod] = useState<Period | null>(null);
   const [items, setItems] = useState<ConsolidatedItem[]>([]);
@@ -109,10 +113,15 @@ function ResultsPage() {
         .order("opened_at", { ascending: false });
       const list = (data ?? []) as Period[];
       setPeriods(list);
-      const auto = list.find((p) => p.phase === "rodada2" || p.phase === "encerrado") ?? list[0] ?? null;
+      const auto =
+        (periodIdParam ? list.find((p) => p.id === periodIdParam) : null) ??
+        list.find((p) => p.phase === "rodada2" || p.phase === "encerrado") ??
+        list[0] ??
+        null;
       setPeriod(auto);
       setLoading(false);
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
