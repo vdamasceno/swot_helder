@@ -16,6 +16,7 @@ import { Route as AuthenticatedValidationRouteImport } from './routes/_authentic
 import { Route as AuthenticatedSwotRouteImport } from './routes/_authenticated/swot'
 import { Route as AuthenticatedManagerRouteImport } from './routes/_authenticated/manager'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedManagerIndexRouteImport } from './routes/_authenticated/manager.index'
 import { Route as AuthenticatedManagerResultsRouteImport } from './routes/_authenticated/manager.results'
 import { Route as AuthenticatedManagerConsolidateRouteImport } from './routes/_authenticated/manager.consolidate'
 import { Route as AuthenticatedManagerCompileRouteImport } from './routes/_authenticated/manager.compile'
@@ -56,6 +57,12 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedManagerIndexRoute =
+  AuthenticatedManagerIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedManagerRoute,
+  } as any)
 const AuthenticatedManagerResultsRoute =
   AuthenticatedManagerResultsRouteImport.update({
     id: '/results',
@@ -99,12 +106,12 @@ export interface FileRoutesByFullPath {
   '/manager/compile': typeof AuthenticatedManagerCompileRoute
   '/manager/consolidate': typeof AuthenticatedManagerConsolidateRoute
   '/manager/results': typeof AuthenticatedManagerResultsRoute
+  '/manager/': typeof AuthenticatedManagerIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
-  '/manager': typeof AuthenticatedManagerRouteWithChildren
   '/swot': typeof AuthenticatedSwotRoute
   '/validation': typeof AuthenticatedValidationRoute
   '/manager/action-plan': typeof AuthenticatedManagerActionPlanRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/manager/compile': typeof AuthenticatedManagerCompileRoute
   '/manager/consolidate': typeof AuthenticatedManagerConsolidateRoute
   '/manager/results': typeof AuthenticatedManagerResultsRoute
+  '/manager': typeof AuthenticatedManagerIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/_authenticated/manager/compile': typeof AuthenticatedManagerCompileRoute
   '/_authenticated/manager/consolidate': typeof AuthenticatedManagerConsolidateRoute
   '/_authenticated/manager/results': typeof AuthenticatedManagerResultsRoute
+  '/_authenticated/manager/': typeof AuthenticatedManagerIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -142,12 +151,12 @@ export interface FileRouteTypes {
     | '/manager/compile'
     | '/manager/consolidate'
     | '/manager/results'
+    | '/manager/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/dashboard'
-    | '/manager'
     | '/swot'
     | '/validation'
     | '/manager/action-plan'
@@ -155,6 +164,7 @@ export interface FileRouteTypes {
     | '/manager/compile'
     | '/manager/consolidate'
     | '/manager/results'
+    | '/manager'
   id:
     | '__root__'
     | '/'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/_authenticated/manager/compile'
     | '/_authenticated/manager/consolidate'
     | '/_authenticated/manager/results'
+    | '/_authenticated/manager/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -228,6 +239,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/manager/': {
+      id: '/_authenticated/manager/'
+      path: '/'
+      fullPath: '/manager/'
+      preLoaderRoute: typeof AuthenticatedManagerIndexRouteImport
+      parentRoute: typeof AuthenticatedManagerRoute
+    }
     '/_authenticated/manager/results': {
       id: '/_authenticated/manager/results'
       path: '/results'
@@ -272,6 +290,7 @@ interface AuthenticatedManagerRouteChildren {
   AuthenticatedManagerCompileRoute: typeof AuthenticatedManagerCompileRoute
   AuthenticatedManagerConsolidateRoute: typeof AuthenticatedManagerConsolidateRoute
   AuthenticatedManagerResultsRoute: typeof AuthenticatedManagerResultsRoute
+  AuthenticatedManagerIndexRoute: typeof AuthenticatedManagerIndexRoute
 }
 
 const AuthenticatedManagerRouteChildren: AuthenticatedManagerRouteChildren = {
@@ -280,6 +299,7 @@ const AuthenticatedManagerRouteChildren: AuthenticatedManagerRouteChildren = {
   AuthenticatedManagerCompileRoute: AuthenticatedManagerCompileRoute,
   AuthenticatedManagerConsolidateRoute: AuthenticatedManagerConsolidateRoute,
   AuthenticatedManagerResultsRoute: AuthenticatedManagerResultsRoute,
+  AuthenticatedManagerIndexRoute: AuthenticatedManagerIndexRoute,
 }
 
 const AuthenticatedManagerRouteWithChildren =
